@@ -34,6 +34,15 @@ class Settings:
     APP_ENV: str = os.getenv("APP_ENV", "development")
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
 
+    # API Configuration
+    API_TITLE: str = "AI Issue Triage System"
+    API_DESCRIPTION: str = "Production AI Platform for Classifying and Prioritizing GitHub Issues using NLP and Machine Learning"
+    API_VERSION: str = "2.0.0"
+    CORS_ORIGINS: list = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "*").split(",") if origin.strip()]
+    MAX_BATCH_SIZE: int = 50
+    MAX_TITLE_LENGTH: int = 500
+    MAX_BODY_LENGTH: int = 50000
+
     # GitHub API Configuration
     GITHUB_TOKEN: str = os.getenv("GITHUB_TOKEN", "")
     GITHUB_API_BASE: str = "https://api.github.com"
@@ -95,9 +104,30 @@ class Settings:
         "P3": {
             "name": "Low",
             "sla_hours": 72,
-            "description": "Cosmetic defect, typo, documentation enhancement, or minor query",
+            "description": "Minor defect, non-critical query, or standard enhancement",
             "color": "#00CC96"
+        },
+        "P4": {
+            "name": "Trivial",
+            "sla_hours": 168,
+            "description": "Cosmetic defect, typo, minor formatting, or nice-to-have suggestion",
+            "color": "#9E9E9E"
         }
+    }
+
+    # Priority Scoring Rule Weights (Heuristic Engine)
+    PRIORITY_WEIGHTS = {
+        "critical_failure": 35,       # crash, segfault, panic, core dump
+        "security_vulnerability": 35, # CVE, exploit, remote code execution
+        "data_loss": 30,              # data loss, database corruption
+        "production_outage": 30,      # service down, 500 error in prod
+        "regression": 20,             # regression introduced in recent version
+        "major_breakage": 20,         # cannot start, fails to build, broken functionality
+        "performance_leak": 15,       # memory leak, high CPU, freeze
+        "has_stack_trace": 10,        # confirmed exception traceback
+        "workaround_available": -15,  # mitigates urgency if user has working workaround
+        "feature_penalty": -15,       # features are generally not urgent unless blocking
+        "doc_typo_penalty": -25,      # docs and typos are low priority
     }
 
     # High-Urgency Heuristic Trigger Words (Used by the Hybrid Prioritization Engine)
